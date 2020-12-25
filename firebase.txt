@@ -1,0 +1,16 @@
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCnLIv5cZHplV_lD3pdCK048yUdcq4vKXU",
+    authDomain: "pollio-38288.firebaseapp.com",
+    databaseURL: "https://pollio-38288.firebaseio.com",
+    projectId: "pollio-38288",
+    storageBucket: "pollio-38288.appspot.com",
+    messagingSenderId: "1016905466383",
+    appId: "1:1016905466383:web:1c3a11be9b0f32732d597a",
+    measurementId: "G-5D28YF7SHP"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+</script>

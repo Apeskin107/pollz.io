@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>pollz.io</title>
+		<link rel="shortcut icon" type="image/jpg" href="/realfavicon.jpg"/>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+			body {
+				background-color: #f00000;
+				min-width: 900px;
+				background-size: 500px 500px;
+				background-image: url("https://cdn.hipwallpaper.com/i/2/89/8SQ9ck.jpg");
+			}
+			.btn-group {
+				background-color: #F0F0F0;
+				height: 50px;
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				padding-top: 8px;
+				padding-bottom: 8px;
+				min-width: 900px;
+			}
+			.btn-group .button {
+				color: #b00000;
+				background-color: #F0F0F0;
+				height: 50px;
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				line-height: 20px;
+				font-family: 'Ubuntu';
+				display: inline-block;
+				cursor: pointer;
+				float: right;
+				border-style: none;
+			}
+			.btn-group .button:hover {
+				background-color: #E0E0E0;
+			}
+			img.logo {
+				width: auto;
+				height: 50px;
+				padding: 5px 5px;
+				margin-top:-5px;
+				display: inline-block;
+			}
+			p.user {
+				color: #b00000;
+				font-family: 'Ubuntu';
+				padding-left: 15px;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				margin-top: -35px;
+				font-size: 18px;
+				display: inline-block;
+				vertical-align: middle;  
+			}
+			h2.welcome {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 64px;
+				text-align:center;
+			}
+			h1.pollio {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 256px;
+				text-align:center;
+				margin-top: -60px;
+				margin-bottom: 50px;
+			}
+			p.welcomeAbout {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 36px;
+				text-align:center;
+			}
+			button.signIn {
+				width: 175px;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 24px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+			button.signOut:hover {
+				background-color: #E0E0E0;
+			}
+			button.signIn:hover {
+				background-color: #E0E0E0;
+			}
+			.grid-container {
+  				display: grid;
+  				grid-template-columns: repeat(4, 1fr); 
+  				padding: 10px;
+			}
+			.grid-welcome {
+  				padding: 5px;
+  				grid-row: 1 / 2;
+  				grid-column: 1 / 5;
+			}
+			.grid-title {
+  				padding: 5px;
+  				grid-row: 2 / 3;
+  				grid-column: 1 / 5;
+			}
+			.grid-signIn {
+  				padding: 5px;
+  				grid-row: 9 / 10;
+  				grid-column: 4 / 5;
+  				justify-self: center;
+			}
+			.grid-welcomeAbout {
+  				padding: 5px;
+  				grid-column-start: 1; 
+  				grid-column-end: 4; 
+  				grid-row-start: 3; 
+  				grid-row-end: 16; 
+			}
+			.container {
+    			margin-top: 50px;
+			}
+		</style>
+	</head>
+	<body>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
+	<script>
+	var firebaseConfig = {
+		apiKey: "AIzaSyCnLIv5cZHplV_lD3pdCK048yUdcq4vKXU",
+		authDomain: "pollio-38288.firebaseapp.com",
+		databaseURL: "https://pollio-38288.firebaseio.com",
+		projectId: "pollio-38288",
+		storageBucket: "pollio-38288.appspot.com",
+		messagingSenderId: "1016905466383",
+		appId: "1:1016905466383:web:1c3a11be9b0f32732d597a",
+		measurementId: "G-5D28YF7SHP"
+	};
+	firebase.initializeApp(firebaseConfig);
+	firebase.analytics();
+	var provider = new firebase.auth.GoogleAuthProvider();
+
+	firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function() {
+		return firebase.auth().signInWithEmailAndPassword(email, password);
+	})
+	.catch(function(error) {
+		console.log(error.code);
+		console.log(error.message);
+	});
+
+	var myKey = "";
+	var myEmail = "";
+	var curUser
+	var oldID
+	var myFunc = function(data) {
+				if (curUser != null) {
+  					return firebase.database().ref('/users/' + curUser.uid + '/banned').once('value').then(function(snapshot) {
+  						if(snapshot.val().banned) {
+  							googleSignout();
+  							alert("You have been banned.");
+  						}
+					});
+				}
+			};
+	
+	firebase.auth().onAuthStateChanged(function(user) {
+		if(oldID != null) {
+			firebase.database().ref('users/' + oldID + '/banned').off('child_added', myFunc);
+			console.log("oldID: " + oldID);
+		}
+		curUser = user;
+		if (user) { 
+			console.log("newID: " + curUser.uid);
+			firebase.database().ref('users/' + curUser.uid + '/banned').on('child_added', myFunc);
+			//firebase.database().ref('users/' + curUser.uid + '/banned').on('child_changed', myFunc);
+			oldID = curUser.uid;
+			var user1 = firebase.auth().currentUser;
+			if (user1 != null) {
+				user1.providerData.forEach(function (profile) {
+					if(profile.displayName.length > 16) {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName.substring(0,16) + "...";
+					}
+					else {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName;
+					}
+					myEmail = profile.email;
+					myKey = profile.uid;
+				});
+			}  
+			document.getElementById('sign').setAttribute( "onClick", "googleSignout()" );
+			document.getElementById('sign').innerHTML = "Sign Out";
+		}
+		else {
+			document.getElementById('sign').setAttribute( "onClick", "googleSignin()" );
+			document.getElementById('sign').innerHTML = "Sign In";
+		}
+	});
+	var ranOnce = false;
+	function googleSignin() {
+		ranOnce = false;
+		firebase.auth().signInWithPopup(provider).then(function(result) {
+			var token = result.credential.accessToken;
+			var user = result.user;
+			//console.log("myKey: " + myKey);
+			firebase.auth().onAuthStateChanged(function(user) {
+				if(!ranOnce) {
+					if (user) {    
+						var user1 = firebase.auth().currentUser;
+						if (user1 != null) {
+							myEmail = user1.email;
+							myKey = user1.uid;
+							//console.log(myEmail);
+							//console.log(myKey);
+							firebase.database().ref('/users/' + myKey + '/email').once('value').then(function(snapshot) {
+								if(snapshot.val() != null && snapshot.val().email === myEmail) {
+									console.log("returning user");
+								}		
+								else {
+									console.log("new user");
+									var postsRef = firebase.database().ref('/users/' + myKey)
+									postsRef.child("email").child("email").set(myEmail);
+									postsRef.child("time").child("time").set(Date.now()-60000);
+									postsRef.child("banned").child("banned").set(true);
+									postsRef.child("userClass").child("userClass").set(1);
+								}
+							});
+						}  
+					}
+					ranOnce = true;
+				}
+			});
+		}).catch(function(error) {
+			console.log(error.code)
+			console.log(error.message)
+		});
+	}
+	function googleSignout() {
+		firebase.auth().signOut().then(function() {
+			console.log('Signout Succesfull')
+			document.getElementById("userName").innerHTML = "USER: not signed in";
+		}, function(error) {
+			console.log('Signout Failed')  
+		});
+	}
+	</script>
+		<div class="btn-group">
+			<img class="logo" src="favicon.jpg">
+			<p class="user" id="userName">USER: not signed in</p>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/viewpolls.html';">View all Polls</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/createpoll.html';">Create a Poll</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/about.html';">About</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net';">Home</button>
+		</div>
+		<div class="container">
+			<div class="grid-container">
+				<div class="grid-welcome"><h2 class = "welcome">Welcome To</h2></div>
+				<div class="grid-title"><h1 class = "pollio">pollz.io</h1></div>
+				<div class="grid-welcomeAbout"><p class = "welcomeAbout">pollz.io is your go to place for polls on anything and everything. Sign in with Google to get started (no account creation necessary), and then head over to "Create a Poll" to start making polls, or go to "View Polls" to start taking polls and comparing your answers to others. You can go to the "About" page to learn more about how to use pollz.io and the rules for creating polls.</p></div>
+				<div class="grid-signIn"><button id="sign" class = "signIn" onclick = "googleSignin()">Sign In</button></div>
+			</div>
+			<br><br><br><p class = "welcomeAbout">PLEASE NOTE: pollz.io is currently in its beta testing phase. Users who create accounts with pollz.io will be banned until the official release unless they are verified beta testers. Upon the release, all information created during the beta testing phase will be wiped from the databse, such as user and poll data. pollz.io will be switching to the pollz.io domain on initial release.</p>
+			<br><br>
+		</div>
+	</body>
+</html>

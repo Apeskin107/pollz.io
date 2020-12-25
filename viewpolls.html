@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>pollz.io</title>
+		<link rel="shortcut icon" type="image/jpg" href="/realfavicon.jpg"/>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+			body {
+				background-color: #f00000;
+				min-width: 900px;
+				background-size: 500px 500px;
+				background-image: url("https://cdn.hipwallpaper.com/i/2/89/8SQ9ck.jpg");
+			}
+			.btn-group {
+				background-color: #F0F0F0;
+				height: 50px;
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				padding-top: 8px;
+				padding-bottom: 8px;
+				min-width: 900px;
+				}
+			.btn-group .button {
+				color: #b00000;
+				background-color: #F0F0F0;
+				height: 50px;
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				line-height: 20px;
+				font-family: 'Ubuntu';
+				display: inline-block;
+				cursor: pointer;
+				float: right;
+				border-style: none;
+			}
+			.btn-group .button:hover {
+				background-color: #E0E0E0;
+			}
+			img.logo {
+				width: auto;
+				height: 50px;
+				padding: 5px 5px;
+				margin-top:-5px;
+				display: inline-block;
+			}
+			p.user {
+				color: #b00000;
+				font-family: 'Ubuntu';
+				padding-left: 15px;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				margin-top: -35px;
+				font-size: 18px;
+				display: inline-block;
+				vertical-align: middle;  
+			}
+			h2.title {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 128px;
+				text-align:center;
+				margin-bottom: 25px;
+			}
+			.container {
+    			margin-top: 50px;
+			}
+			select.mySelect {
+				width: 175px;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 24px;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+				margin-top: 50px;
+			}
+			option.classes {
+				color: #b00000;
+				background-color: #F0F0F0;
+				font-size: 24px;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
+	<script>
+	var myClass;
+	var firebaseConfig = {
+		apiKey: "AIzaSyCnLIv5cZHplV_lD3pdCK048yUdcq4vKXU",
+		authDomain: "pollio-38288.firebaseapp.com",
+		databaseURL: "https://pollio-38288.firebaseio.com",
+		projectId: "pollio-38288",
+		storageBucket: "pollio-38288.appspot.com",
+		messagingSenderId: "1016905466383",
+		appId: "1:1016905466383:web:1c3a11be9b0f32732d597a",
+		measurementId: "G-5D28YF7SHP"
+	};
+	firebase.initializeApp(firebaseConfig);
+	firebase.analytics();
+	var provider = new firebase.auth.GoogleAuthProvider();
+
+	firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function() {
+		return firebase.auth().signInWithEmailAndPassword(email, password);
+	})
+	.catch(function(error) {
+		console.log(error.code);
+		console.log(error.message);
+	});
+
+	var myKey = "";
+	var myEmail = "";
+	var curUser
+	var oldID
+	var myFunc = function(data) {
+				if (curUser != null) {
+  					return firebase.database().ref('/users/' + curUser.uid + '/banned').once('value').then(function(snapshot) {
+  						if(snapshot.val().banned) {
+  							googleSignout();
+  							alert("You have been banned.");
+  						}
+					});
+				}
+			};
+	
+	firebase.auth().onAuthStateChanged(function(user) {
+		if(oldID != null) {
+			firebase.database().ref('users/' + oldID + '/banned').off('child_added', myFunc);
+			console.log("oldID: " + oldID);
+		}
+		curUser = user;
+		if (user) { 
+			console.log("newID: " + curUser.uid);
+			firebase.database().ref('users/' + curUser.uid + '/banned').on('child_added', myFunc);
+			//firebase.database().ref('users/' + curUser.uid + '/banned').on('child_changed', myFunc);
+			oldID = curUser.uid;
+			var user1 = firebase.auth().currentUser;
+			if (user1 != null) {
+				user1.providerData.forEach(function (profile) {
+					if(profile.displayName.length > 16) {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName.substring(0,16) + "...";
+					}
+					else {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName;
+					}
+					myEmail = profile.email;
+					myKey = profile.uid;
+				});
+			}  
+			
+			
+			return firebase.database().ref('/users/' + user.uid + '/userClass').once('value').then(function(snapshot) {
+  				myClass = snapshot.val().userClass
+  				console.log(myClass);
+  				if(myClass > 1) {
+					var appendIt;
+					appendIt = document.createElement('select');
+        			appendIt.setAttribute('class', 'mySelect');
+        			appendIt.setAttribute('id', 'selectOpt');
+        			document.getElementById("classSelection").appendChild(appendIt);
+        			appendIt = document.createElement('option');
+        			appendIt.textContent = "Class 1";
+        			appendIt.setAttribute('class', 'classes');
+        			appendIt.setAttribute('id', 'class1');
+        			document.getElementById("selectOpt").appendChild(appendIt);
+					appendIt = document.createElement('option');
+        			appendIt.textContent = "Class 2";
+        			appendIt.setAttribute('class', 'classes');
+        			appendIt.setAttribute('id', 'class2');
+        			document.getElementById("selectOpt").appendChild(appendIt);
+					if(myClass == 3) {
+						appendIt = document.createElement('option');
+        				appendIt.textContent = "Class 3";
+        				appendIt.setAttribute('class', 'classes');
+        				appendIt.setAttribute('id', 'class3');
+        				document.getElementById("selectOpt").appendChild(appendIt);
+					}
+				}
+			});
+			
+			
+		}
+	});
+
+	function googleSignout() {
+		firebase.auth().signOut().then(function() {
+			console.log('Signout Succesfull')
+			document.getElementById("userName").innerHTML = "USER: not signed in";
+		}, function(error) {
+			console.log('Signout Failed')  
+		});
+	}
+	</script>
+		<div class="btn-group">
+			<img class="logo" src="favicon.jpg">
+			<p class="user" id="userName">USER: not signed in</p>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/viewpolls.html';">View all Polls</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/createpoll.html';">Create a Poll</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/about.html';">About</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net';">Home</button>
+		</div>
+		<div class="container">
+			<h2 class="title">View Polls</h2>
+			<div align="center"><div id="classSelection"></div></div>
+			<br><br><br><br><br>
+		</div>
+	</body>
+</html>

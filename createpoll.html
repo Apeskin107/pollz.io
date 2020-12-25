@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>pollz.io</title>
+		<link rel="shortcut icon" type="image/jpg" href="/realfavicon.jpg"/>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+			body {
+				background-color: #f00000;
+				min-width: 900px;
+				background-size: 500px 500px;
+				background-image: url("https://cdn.hipwallpaper.com/i/2/89/8SQ9ck.jpg");
+			}
+			.btn-group {
+				background-color: #F0F0F0;
+				height: 50px;
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				padding-top: 8px;
+				padding-bottom: 8px;
+				min-width: 900px;
+			}
+			.btn-group .button {
+				color: #b00000;
+				background-color: #F0F0F0;
+				height: 50px;
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				line-height: 20px;
+				font-family: 'Ubuntu';
+				display: inline-block;
+				cursor: pointer;
+				float: right;
+				border-style: none;
+			}
+			.btn-group .button:hover {
+				background-color: #E0E0E0;
+			}
+			img.logo {
+				width: auto;
+				height: 50px;
+				padding: 5px 5px;
+				margin-top:-5px;
+				display: inline-block;
+			}
+			p.user {
+				color: #b00000;
+				font-family: 'Ubuntu';
+				padding-left: 15px;
+				padding-top: 5px;
+				padding-bottom: 5px;
+				margin-top: -35px;
+				font-size: 18px;
+				display: inline-block;
+				vertical-align: middle; 
+			}
+			h2.title {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 128px;
+				text-align:center;
+				margin-bottom: 25px;
+			}
+			h4.subtitle {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 40px;
+				margin-bottom: 10px;
+				margin-left: calc(10vw / 2 - 30px);
+			}
+			textarea {
+				background-color: #F0F0F0;
+				color: #b00000;
+				border: none;
+				border-radius: 4px;
+				font-family: 'Ubuntu';
+				resize: none;
+				width: 90vw;
+				height: 10vh;
+				font-size: 20px;
+				padding: 15px;
+				margin-bottom: 10px;
+			}
+			.grid-container {
+  				margin-top: 10px;
+  				display: grid;
+  				grid-template-columns: repeat(1, 1fr); 
+  				padding: 10px;
+			}
+			.grid-item {
+  				padding: 5px;
+  				justify-self: center;
+			}
+			button.submit {
+				width: 175px;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 24px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+				margin-top: 50px;
+			}
+			button.submit:hover {
+				background-color: #E0E0E0;
+			}
+			.container {
+    			margin-top: 75px;
+			}
+			select.mySelect {
+				width: 175px;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 24px;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+				margin-top: 50px;
+			}
+			option.classes {
+				color: #b00000;
+				background-color: #F0F0F0;
+				font-size: 24px;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-analytics.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
+	<script>
+	var myClass;
+	var firebaseConfig = {
+		apiKey: "AIzaSyCnLIv5cZHplV_lD3pdCK048yUdcq4vKXU",
+		authDomain: "pollio-38288.firebaseapp.com",
+		databaseURL: "https://pollio-38288.firebaseio.com",
+		projectId: "pollio-38288",
+		storageBucket: "pollio-38288.appspot.com",
+		messagingSenderId: "1016905466383",
+		appId: "1:1016905466383:web:1c3a11be9b0f32732d597a",
+		measurementId: "G-5D28YF7SHP"
+	};
+	firebase.initializeApp(firebaseConfig);
+	firebase.analytics();
+	var provider = new firebase.auth.GoogleAuthProvider();
+
+	firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION).then(function() {
+		return firebase.auth().signInWithEmailAndPassword(email, password);
+	})
+	.catch(function(error) {
+		console.log(error.code);
+		console.log(error.message);
+	});
+
+	var myKey = "";
+	var myEmail = "";
+	var curUser
+	var oldID
+	var myFunc = function(data) {
+				if (curUser != null) {
+  					return firebase.database().ref('/users/' + curUser.uid + '/banned').once('value').then(function(snapshot) {
+  						if(snapshot.val().banned) {
+  							googleSignout();
+  							alert("You have been banned.");
+  						}
+					});
+				}
+			};
+	
+	firebase.auth().onAuthStateChanged(function(user) {
+		if(oldID != null) {
+			firebase.database().ref('users/' + oldID + '/banned').off('child_added', myFunc);
+			console.log("oldID: " + oldID);
+		}
+		curUser = user;
+		if (user) { 
+			console.log("newID: " + curUser.uid);
+			firebase.database().ref('users/' + curUser.uid + '/banned').on('child_added', myFunc);
+			//firebase.database().ref('users/' + curUser.uid + '/banned').on('child_changed', myFunc);
+			oldID = curUser.uid;
+			var user1 = firebase.auth().currentUser;
+			if (user1 != null) {
+				user1.providerData.forEach(function (profile) {
+					if(profile.displayName.length > 16) {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName.substring(0,16) + "...";
+					}
+					else {
+						document.getElementById("userName").innerHTML = "USER: " + profile.displayName;
+					}
+					myEmail = profile.email;
+					myKey = profile.uid;
+				});
+			}  
+			
+			
+			return firebase.database().ref('/users/' + user.uid + '/userClass').once('value').then(function(snapshot) {
+  				myClass = snapshot.val().userClass
+  				console.log(myClass);
+  				if(myClass > 1) {
+					var appendIt;
+					appendIt = document.createElement('select');
+        			appendIt.setAttribute('class', 'mySelect');
+        			appendIt.setAttribute('id', 'selectOpt');
+        			document.getElementById("classSelection").appendChild(appendIt);
+        			appendIt = document.createElement('option');
+        			appendIt.textContent = "Class 1";
+        			appendIt.setAttribute('class', 'classes');
+        			appendIt.setAttribute('id', 'class1');
+        			document.getElementById("selectOpt").appendChild(appendIt);
+					appendIt = document.createElement('option');
+        			appendIt.textContent = "Class 2";
+        			appendIt.setAttribute('class', 'classes');
+        			appendIt.setAttribute('id', 'class2');
+        			document.getElementById("selectOpt").appendChild(appendIt);
+					if(myClass == 3) {
+						appendIt = document.createElement('option');
+        				appendIt.textContent = "Class 3";
+        				appendIt.setAttribute('class', 'classes');
+        				appendIt.setAttribute('id', 'class3');
+        				document.getElementById("selectOpt").appendChild(appendIt);
+					}
+				}
+			});
+			
+			
+		}
+	});
+
+	function googleSignout() {
+		firebase.auth().signOut().then(function() {
+			console.log('Signout Succesfull')
+			document.getElementById("userName").innerHTML = "USER: not signed in";
+		}, function(error) {
+			console.log('Signout Failed')  
+		});
+	}
+
+	var numQuestions1 = 0;
+	var numQuestionsRef1 = firebase.database().ref('/polls/');
+	numQuestionsRef1.on('child_added', function(data) {
+		numQuestions1++;
+		console.log("numQuestions1: " + numQuestions1);
+	});
+	var numQuestions2 = 0;
+	var numQuestionsRef2 = firebase.database().ref('/polls2/');
+	numQuestionsRef2.on('child_added', function(data) {
+		numQuestions2++;
+		console.log("numQuestions2: " + numQuestions2);
+	});
+	var numQuestions3 = 0;
+	var numQuestionsRef3 = firebase.database().ref('/polls3/');
+	numQuestionsRef3.on('child_added', function(data) {
+		numQuestions3++;
+		console.log("numQuestions3: " + numQuestions3);
+	});
+	
+	function submit() {
+		var curTime = Date.now();
+		if (curUser != null) {
+			var pollsClass = "/polls/";
+			if(myClass >= 2) {
+				if(document.getElementById("class1").selected)
+					pollsClass = "/polls/";
+				if(document.getElementById("class2").selected)
+					pollsClass = "/polls2/";
+			}
+			if(myClass >= 3) {
+				if(document.getElementById("class3").selected)
+					pollsClass = "/polls3/";
+			}
+			return firebase.database().ref('/users/' + curUser.uid + '/time').once('value').then(function(snapshot) {
+  				if(snapshot.val().time + 60000 < curTime) {
+					if(document.getElementById("question").value != "" && document.getElementById("a").value != "" && document.getElementById("b").value != "") {
+						var keyRef = firebase.database().ref(pollsClass);
+						var foundMatch = false;
+						var questionsIterated = 0;
+						var turnOff = function(data) {
+							var pollKey = data.key
+							var quoteRef = firebase.database().ref(pollsClass + pollKey + '/question');
+							quoteRef.once('value', function(snapshot) {
+  								var tempQuestion = snapshot.val().question;
+  								var tryQuestion = document.getElementById("question").value;
+  								tempQuestion = tempQuestion.replace(/[^a-zA-Z0-9]/g, '');
+  								tryQuestion = tryQuestion.replace(/[^a-zA-Z0-9]/g, '');
+  								if(tryQuestion === tempQuestion || tryQuestion == "")
+  									foundMatch = true;
+  								questionsIterated++;
+  								console.log("questionsIterated: " + questionsIterated);
+							});
+						}
+						keyRef.on('child_added', turnOff);
+						var questionsCompare;
+						if (myClass == 1 || document.getElementById("class1").selected) {
+							questionsCompare = questionsIterated == numQuestions1;
+						}
+						else if (myClass >= 2 && document.getElementById("class2").selected) {
+							questionsCompare = questionsIterated == numQuestions2;
+						}
+						else if (myClass >= 3 && document.getElementById("class3").selected) {
+							questionsCompare = questionsIterated == numQuestions3;
+						}
+						console.log(myClass);
+						console.log(questionsCompare);
+						if(!foundMatch && questionsCompare) {
+							console.log("passed all of the requirements");
+							keyRef.off('child_added', turnOff);
+
+							var pollsRef = firebase.database().ref(pollsClass).push();
+							pollsRef.child("question").child("question").set(document.getElementById("question").value);
+							pollsRef.child("options").child("optionA").set(document.getElementById("a").value);
+							pollsRef.child("options").child("optionB").set(document.getElementById("b").value);
+							pollsRef.child("options").child("optionC").set(document.getElementById("c").value);
+							pollsRef.child("options").child("optionD").set(document.getElementById("d").value);
+							pollsRef.child("options").child("optionE").set(document.getElementById("e").value);
+							firebase.database().ref("/users/" + curUser.uid + "/myPolls").push().child("pollKey").set(pollsRef.key);
+							pollsRef.child("upvotes").child("upvotes").set(0);
+							pollsRef.child("nums").child("numA").set(0);
+							pollsRef.child("nums").child("numB").set(0);
+							pollsRef.child("nums").child("numC").set(0);
+							pollsRef.child("nums").child("numD").set(0);
+							pollsRef.child("nums").child("numE").set(0);
+							//firebase.database().ref('/users/' + curUser.uid + '/time').child("time").set(curTime);
+							alert("Your poll was successfully submitted!");
+						}
+						else {
+							keyRef.off('child_added', turnOff);
+							alert("The question you tried to submit already exits or you did not submit a valid question");
+						}
+					}
+					else
+						alert("You must fill out the Poll Question, Poll Option A, and Poll Option B");
+  				}
+  				else
+					alert("You already created a poll within the past 5 minutes");
+			});
+		}
+		else
+			alert("You must be logged in to submit a poll");
+	}
+	</script>
+		<div class="btn-group">
+			<img class="logo" src="favicon.jpg">
+			<p class="user" id="userName">USER: not signed in</p>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/viewpolls.html';">View all Polls</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/createpoll.html';">Create a Poll</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/about.html';">About</button>
+			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net';">Home</button>
+		</div>
+		<div class="container">
+		<h2 class="title">Create A Poll</h2>
+			<div class="grid-container">
+				<h4 class="subtitle">Poll Question:</h4>
+				<div class="grid-item"><textarea id="question" maxlength="512" placeholder="Enter your poll question here..."></textarea></div>
+				<h4 class="subtitle">Poll Option A:</h4>
+				<div class="grid-item"><textarea id="a" maxlength="256" placeholder="Enter poll option a here..."></textarea></div>
+				<h4 class="subtitle">Poll Option B:</h4>
+				<div class="grid-item"><textarea id="b" maxlength="256" placeholder="Enter poll option b here..."></textarea></div>
+				<h4 class="subtitle">Poll Option C (optional):</h4>
+				<div class="grid-item"><textarea id="c" maxlength="256" placeholder="Enter poll option c here..."></textarea></div>
+				<h4 class="subtitle">Poll Option D (optional):</h4>
+				<div class="grid-item"><textarea id="d" maxlength="256" placeholder="Enter poll option d here..."></textarea></div>
+				<h4 class="subtitle">Poll Option E (optional):</h4>
+				<div class="grid-item"><textarea id="e" maxlength="256" placeholder="Enter poll option e here..."></textarea></div>
+				<div class="grid-item"><button class="submit" onclick = "submit()">Submit Poll</button></div>
+				<div class="grid-item"><div id="classSelection"></div></div>
+			</div>
+			<br><br><br><br><br>
+		</div>
+	</body>
+</html>
