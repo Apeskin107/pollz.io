@@ -86,6 +86,129 @@
 				font-family: 'Ubuntu';
 				cursor: pointer;
 			}
+      button.reload {
+				width: 175px;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 24px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+				margin-top: 50px;
+			}
+			button.reload:hover {
+				background-color: #E0E0E0;
+			}
+      p.question {
+				color: #F0F0F0;
+				font-family: 'Ubuntu';
+				font-size: 36px;
+				text-align:center;
+			}
+      .grid-container {
+  			display: grid;
+  			grid-template-columns: repeat(2, 3fr); 
+  			padding: 10px;
+        grid-row-gap: 2vh;
+			}
+      .grid-optiona {
+  			padding: 5px;
+  			grid-row: 1 / 2;
+  			grid-column: 1 / 2;
+        width: 25vw;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 18px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+      .grid-optionb {
+  			padding: 5px;
+  			grid-row: 1 / 2;
+  			grid-column: 2 / 3;
+        width: 25vw;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 18px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+      .grid-optionc {
+  			padding: 5px;
+  			grid-row: 1 / 2;
+  			grid-column: 3 / 4;
+        width: 25vw;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 18px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+      .grid-optiond {
+  			padding: 5px;
+  			grid-row: 2 / 3;
+  			grid-column: 1 / 2;
+        width: 25vw;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 18px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+      .grid-optione {
+  			padding: 5px;
+  			grid-row: 2 / 3;
+  			grid-column: 2 / 3;
+        width: 25vw;
+				color: #b00000;
+				background-color: #F0F0F0;
+				padding: 25px 25px;
+				font-size: 18px;
+				text-align: center;
+				font-family: 'Ubuntu';
+				cursor: pointer;
+				border-style: none;
+				border-radius: 20px;
+			}
+      .grid-optiona:hover {
+				background-color: #E0E0E0;
+			}
+      .grid-optionb:hover {
+				background-color: #E0E0E0;
+			}
+      .grid-optionc:hover {
+				background-color: #E0E0E0;
+			}
+      .grid-optiond:hover {
+				background-color: #E0E0E0;
+			}
+      .grid-optione:hover {
+				background-color: #E0E0E0;
+			}
+      .grid-upvotes {
+  			padding: 5px;
+  			grid-row: 2 / 3;
+  			grid-column: 3 / 4;
+			}
 		</style>
 	</head>
 	<body>
@@ -95,7 +218,7 @@
 	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-firestore.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.19.1/firebase-database.js"></script>
 	<script>
-	var myClass;
+	var myClass = 1;
 	var firebaseConfig = {
 		apiKey: "AIzaSyCnLIv5cZHplV_lD3pdCK048yUdcq4vKXU",
 		authDomain: "pollio-38288.firebaseapp.com",
@@ -117,11 +240,17 @@
 		console.log(error.code);
 		console.log(error.message);
 	});
-
+  var viewingClass = '/polls'
+  var mainDomain = "https://pollzio.aaronpeskin1.repl.co/"
 	var myKey = "";
 	var myEmail = "";
 	var curUser
 	var oldID
+  var loadAmount = 0
+  var loaded = 0
+  var thisKey
+  var reff = firebase.database().ref('polls/')
+
 	var myFunc = function(data) {
 				if (curUser != null) {
   					return firebase.database().ref('/users/' + curUser.uid + '/banned').once('value').then(function(snapshot) {
@@ -157,8 +286,8 @@
 					myKey = profile.uid;
 				});
 			}  
-			
-			
+      
+
 			return firebase.database().ref('/users/' + user.uid + '/userClass').once('value').then(function(snapshot) {
   				myClass = snapshot.val().userClass
   				console.log(myClass);
@@ -167,6 +296,7 @@
 					appendIt = document.createElement('select');
         			appendIt.setAttribute('class', 'mySelect');
         			appendIt.setAttribute('id', 'selectOpt');
+              appendIt.setAttribute('onclick', 'classSelected()')
         			document.getElementById("classSelection").appendChild(appendIt);
         			appendIt = document.createElement('option');
         			appendIt.textContent = "Class 1";
@@ -192,26 +322,160 @@
 		}
 	});
 
+  function classSelected() {
+    document.getElementById("load").innerHTML = "Reload"
+    loadAmount = 0
+  }
+  function reload() {
+    loadAmount += 10
+    for(var i = 0; i < loaded; i++) {
+      document.getElementById("" + i).remove();
+      document.getElementById("optionA" + i).remove();
+      document.getElementById("optionB" + i).remove();
+      document.getElementById("optionC" + i).remove();
+      document.getElementById("optionD" + i).remove();
+      document.getElementById("optionE" + i).remove();
+      document.getElementById("grid" + i).remove();
+      document.getElementById("1br" + i).remove();
+      document.getElementById("2br" + i).remove();
+      document.getElementById("3br" + i).remove();
+    }
+    loaded = 0
+    thisKey = new Array(loadAmount)
+    if(myClass == 1) {
+      reff = 'polls/'
+    }
+    if(myClass > 1 && document.getElementById("class1").selected == true) {
+      reff = 'polls/'
+    }
+    else if(myClass > 1 && document.getElementById("class2").selected == true) {
+      reff = 'polls2/'
+    }
+    else if(myClass > 2 && document.getElementById("class3").selected == true) {
+      reff = 'polls3/'
+    }
+    var tester = 0
+    firebase.database().ref(reff).orderByChild('upvotes/upvotes').limitToFirst(loadAmount).once('value', (snapshot) => {
+      snapshot.forEach((data) => {
+        console.log(data.val())
+        var appendIt;
+        thisKey[tester] = data.key
+        console.log(thisKey)
+        appendIt = document.createElement('p');
+        appendIt.setAttribute('class', 'question');
+        appendIt.setAttribute('id', '' + tester);
+        document.getElementById("polls").appendChild(appendIt);
+        document.getElementById("" + tester).innerHTML = data.val().question.question
+
+        appendIt = document.createElement('div');
+        appendIt.setAttribute('class', 'grid-container');
+        appendIt.setAttribute('id', 'grid' + tester);
+        document.getElementById("polls").appendChild(appendIt);
+
+        appendIt = document.createElement('button');
+        appendIt.setAttribute('class', 'grid-optiona');
+        appendIt.setAttribute('id', 'optionA' + tester);
+        if(data.child("/takers/" + myKey).val() == null) {
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey[], 1)');
+        }
+        else {
+          //percentage!
+        }
+        document.getElementById('grid' + tester).appendChild(appendIt);
+        document.getElementById("optionA" + tester).innerHTML = data.val().options.optionA
+
+        appendIt = document.createElement('button');
+        appendIt.setAttribute('class', 'grid-optionb');
+        appendIt.setAttribute('id', 'optionB' + tester);
+        if(data.child("/takers/" + myKey).val() == null)
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey, 2)');
+        else {
+          //percentage!
+        }
+        document.getElementById('grid' + tester).appendChild(appendIt);
+        document.getElementById("optionB" + tester).innerHTML = data.val().options.optionB
+
+        appendIt = document.createElement('button');
+        appendIt.setAttribute('class', 'grid-optionc');
+        appendIt.setAttribute('id', 'optionC' + tester);
+        if(data.child("/takers/" + myKey).val() == null)
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey, 3)');
+        else {
+          //percentage!
+        }
+        document.getElementById('grid' + tester).appendChild(appendIt);
+        document.getElementById("optionC" + tester).innerHTML = data.val().options.optionC
+
+        appendIt = document.createElement('button');
+        appendIt.setAttribute('class', 'grid-optiond');
+        appendIt.setAttribute('id', 'optionD' + tester);
+        if(data.child("/takers/" + myKey).val() == null)
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey, 4)');
+        else {
+          //percentage!
+        }
+        document.getElementById('grid' + tester).appendChild(appendIt);
+        document.getElementById("optionD" + tester).innerHTML = data.val().options.optionD
+
+        appendIt = document.createElement('button');
+        appendIt.setAttribute('class', 'grid-optione');
+        appendIt.setAttribute('id', 'optionE' + tester);
+        if(data.child("/takers/" + myKey).val() == null)
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey, 5)');
+        else {
+          //percentage!
+        }
+        document.getElementById('grid' + tester).appendChild(appendIt);
+        document.getElementById("optionE" + tester).innerHTML = data.val().options.optionE
+
+        appendIt = document.createElement('br');
+        appendIt.setAttribute('id', '1br' + tester);
+        document.getElementById("polls").appendChild(appendIt);
+        appendIt = document.createElement('br');
+        appendIt.setAttribute('id', '2br' + tester);
+        document.getElementById("polls").appendChild(appendIt);
+        appendIt = document.createElement('br');
+        appendIt.setAttribute('id', '3br' + tester);
+        document.getElementById("polls").appendChild(appendIt);
+
+        loaded++
+        tester++
+      });
+    });
+    document.getElementById("load").innerHTML = "Load More"
+  }
+
 	function googleSignout() {
 		firebase.auth().signOut().then(function() {
-			console.log('Signout Succesfull')
+      console.log('Signout Succesfull')
 			document.getElementById("userName").innerHTML = "USER: not signed in";
 		}, function(error) {
 			console.log('Signout Failed')  
 		});
 	}
+
+  function chooseOption(key, option) {
+    if(curUser == null)
+      alert("You must be logged in to vote.")
+    else {
+      firebase.database().ref(reff +  key + "/takers/" + myKey).set({
+        vote: 0
+      });
+      console.log(reff + key + "/takers/" + myKey)
+    }
+  }
 	</script>
 		<div class="btn-group">
 			<img class="logo" src="favicon.jpg">
 			<p class="user" id="userName">USER: not signed in</p>
-			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/viewpolls.html';">View all Polls</button>
-			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/createpoll.html';">Create a Poll</button>
-			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net/about.html';">About</button>
-			<button class="button" onclick="window.location.href = 'http://apegolf.ddns.net';">Home</button>
+			<button class="button" onclick="window.location.href = mainDomain + 'viewpolls.html';">View all Polls</button>
+			<button class="button" onclick="window.location.href = mainDomain + 'createpoll.html';">Create a Poll</button>
+			<button class="button" onclick="window.location.href = mainDomain + 'about.html';">About</button>
+			<button class="button" onclick="window.location.href = mainDomain;">Home</button>
 		</div>
 		<div class="container">
 			<h2 class="title">View Polls</h2>
-			<div align="center"><div id="classSelection"></div></div>
+			<div align="center"><div id="polls"></div><div id="classSelection"></div><button class="reload" onclick="reload()" id="load">Load More</button></div>
 			<br><br><br><br><br>
 		</div>
 	</body>
