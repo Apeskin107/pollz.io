@@ -341,7 +341,7 @@
       document.getElementById("3br" + i).remove();
     }
     loaded = 0
-    thisKey = new Array(loadAmount)
+  
     if(myClass == 1) {
       reff = 'polls/'
     }
@@ -359,8 +359,8 @@
       snapshot.forEach((data) => {
         console.log(data.val())
         var appendIt;
-        thisKey[tester] = data.key
-        console.log(thisKey)
+        thisKey = data.key
+        console.log(data.key)
         appendIt = document.createElement('p');
         appendIt.setAttribute('class', 'question');
         appendIt.setAttribute('id', '' + tester);
@@ -376,7 +376,7 @@
         appendIt.setAttribute('class', 'grid-optiona');
         appendIt.setAttribute('id', 'optionA' + tester);
         if(data.child("/takers/" + myKey).val() == null) {
-          appendIt.setAttribute('onclick', 'chooseOption(thisKey[], 1)');
+          appendIt.setAttribute('onclick', 'chooseOption(thisKey, 1)');
         }
         else {
           //percentage!
